@@ -14,5 +14,4 @@ class RequestMessage {
     String accessKey
     Host host
     Instance instance
-    DockerHubAuth dockerHubAuth
 }

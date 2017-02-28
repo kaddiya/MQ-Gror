@@ -1,11 +1,23 @@
 package org.kaddiya.mqgror
 
+import com.google.inject.Guice
+import com.google.inject.Injector
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
+import org.kaddiya.grorchestrator.guice.DeserialiserModule
+import org.kaddiya.grorchestrator.guice.DockerRemoteAPIModule
+import org.kaddiya.grorchestrator.guice.GrorchestratorModule
+import org.kaddiya.grorchestrator.guice.HelperModule
+import org.kaddiya.grorchestrator.guice.factory.DockerContainerActionFactory
+import org.kaddiya.grorchestrator.managers.DockerRemoteAPI
+import org.kaddiya.grorchestrator.managers.interfaces.DockerRemoteInterface
+import org.kaddiya.grorchestrator.models.HostType
+import org.kaddiya.grorchestrator.models.core.latest.Host
+import org.kaddiya.grorchestrator.models.core.latest.Instance
 import org.kaddiya.mqgror.tasks.OrchestrationTask
 
 import java.util.concurrent.ExecutorService
@@ -33,6 +45,7 @@ class MQGror {
         props.put("value.deserializer", StringDeserializer.class.getName());
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
 
+
         List<String> topics = Arrays.asList("test")
 
         consumer.subscribe(topics)
@@ -45,11 +58,29 @@ class MQGror {
                 data.put("offset", record.offset());
                 data.put("value", record.value());
                 log.info("hello")
-                OrchestrationTask task = new OrchestrationTask(++taskId)
+                OrchestrationTask task = new OrchestrationTask(++taskId,getHost(),getInstance())
                 Future result = orchestratorService.submit(task)
                 log.info("tasks with id : {} has been executed {}",result.get().taskId,result.get().sucess)
             }
         }
 
+
+    }
+
+    static Host getHost(){
+     /*   private String ip;
+        private String alias;
+        private Integer dockerPort;
+        private String protocol;
+        private String dockerVersion;
+        private String apiVersion;
+        private String certPathForDockerDaemon;
+        private HostType hostType;*/
+
+        return new Host("localhost","demo",2376,"http","","",null,HostType.UNIX)
+    }
+
+    static Instance getInstance(){
+        new Instance("redis.proof.com","redis","latest",null,"default",Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_LIST,"")
     }
 }
