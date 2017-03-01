@@ -23,9 +23,12 @@ repositories {
 dependencies {
     // We use the latest groovy 2.x version for building this library
     compile 'org.codehaus.groovy:groovy-all:2.4.0'
-    compile 'org.kaddiya:grorchestrator:1.0.2-SNAPSHOT'
+    compile 'org.kaddiya:grorchestrator:1.0.2'
     // We use the awesome Spock testing and specification framework
     testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
+    // https://mvnrepository.com/artifact/com.google.guava/guava
+    compile group: 'com.google.guava', name: 'guava', version: '21.0'
+
     // https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
     compile group: 'org.apache.kafka', name: 'kafka-clients', version: '0.10.1.1'
 
