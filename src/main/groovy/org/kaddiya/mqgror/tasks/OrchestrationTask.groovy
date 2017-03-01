@@ -18,6 +18,7 @@ import org.kaddiya.grorchestrator.managers.interfaces.DockerRemoteInterface
 import org.kaddiya.grorchestrator.managers.interfaces.InspectContainer
 import org.kaddiya.grorchestrator.models.HostType
 import org.kaddiya.grorchestrator.models.core.DockerHubAuth
+import org.kaddiya.grorchestrator.models.core.SupportedContainerActions
 import org.kaddiya.grorchestrator.models.core.latest.Host
 import org.kaddiya.grorchestrator.models.core.latest.Instance
 import org.kaddiya.grorchestrator.models.remotedocker.responses.AbstractDockerInteractionResponse
@@ -30,29 +31,15 @@ import java.util.concurrent.Callable
  */
 @Slf4j
 @CompileStatic
-class OrchestrationTask implements Callable<OrchestrationResult> {
+class OrchestrationTask extends AbstractOrchestrationTask implements Callable<OrchestrationResult> {
 
-
-    private final Long taskId
-    private final Instance instance
-    private final Host host
-
-    public OrchestrationTask(Long taskId,Host host,Instance instance){
-        this.host = host
-        this.instance = instance
-        this.taskId = taskId
-
+    public OrchestrationTask(Long taskId,Host host,Instance instance,SupportedContainerActions action){
+        super(instance,host,action)
+        this.taskId = taskId;
     }
     @Override
     OrchestrationResult call() throws Exception {
-        Injector grorchestratorInjector = Guice.createInjector(new GrorchestratorModule(
-                new DeserialiserModule(), new DockerRemoteAPIModule(), new HelperModule()
-
-        ))
-        DockerContainerActionFactory actionFactory = grorchestratorInjector.getInstance(DockerContainerActionFactory)
-        DockerRemoteInterface remoteInterface = actionFactory.getContainerKiller(instance,host)
-
-        AbstractDockerInteractionResponse interactionResponse = remoteInterface.doWork()
+        AbstractDockerInteractionResponse interactionResponse = entryPoint.doWork()
         return new OrchestrationResult(taskId,true,interactionResponse)
     }
 

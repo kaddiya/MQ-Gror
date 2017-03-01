@@ -1,7 +1,10 @@
 package org.kaddiya.mqgror
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.inject.Guice
 import com.google.inject.Injector
+import groovy.json.JsonBuilder
+import groovy.json.JsonParser
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -16,10 +19,13 @@ import org.kaddiya.grorchestrator.guice.factory.DockerContainerActionFactory
 import org.kaddiya.grorchestrator.managers.DockerRemoteAPI
 import org.kaddiya.grorchestrator.managers.interfaces.DockerRemoteInterface
 import org.kaddiya.grorchestrator.models.HostType
+import org.kaddiya.grorchestrator.models.core.SupportedContainerActions
 import org.kaddiya.grorchestrator.models.core.latest.Host
 import org.kaddiya.grorchestrator.models.core.latest.Instance
+import org.kaddiya.mqgror.models.kafka.RequestMessage
 import org.kaddiya.mqgror.tasks.OrchestrationTask
 
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -53,14 +59,38 @@ class MQGror {
         while(true){
             ConsumerRecords<String, String> records = consumer.poll(10);
             for (ConsumerRecord<String, String> record : records) {
+
+               // log.info(getJson())
                 Map<String, Object> data = new HashMap<>();
                 data.put("partition", record.partition());
                 data.put("offset", record.offset());
                 data.put("value", record.value());
-                log.info("hello")
-                OrchestrationTask task = new OrchestrationTask(++taskId,getHost(),getInstance())
+                SupportedContainerActions action
+                try {
+                     action = SupportedContainerActions.valueOf(record.value())
+                }catch (Exception e){
+                    log.warn("Incorrect value found")
+                    continue;
+                }
+
+               /* ObjectMapper mapper = new ObjectMapper();
+                RequestMessage message ;
+
+                message = mapper.readValue(record.value().bytes,RequestMessage.class)
+                assert  message
+                assert message.host
+                assert  message.instance*/
+
+                OrchestrationTask task = new OrchestrationTask(++taskId,getHost(),getInstance(),action)
                 Future result = orchestratorService.submit(task)
-                log.info("tasks with id : {} has been executed {}",result.get().taskId,result.get().sucess)
+                try {
+                    result.get()
+                    log.info("tasks with id : {} has been executed {}",result.get().taskId,result.get().sucess)
+                }
+                catch (ExecutionException e){
+                    log.error("Something went wrong in the execution of task with id {}",taskId,e.getCause())
+                }
+
             }
         }
 
@@ -68,19 +98,14 @@ class MQGror {
     }
 
     static Host getHost(){
-     /*   private String ip;
-        private String alias;
-        private Integer dockerPort;
-        private String protocol;
-        private String dockerVersion;
-        private String apiVersion;
-        private String certPathForDockerDaemon;
-        private HostType hostType;*/
-
         return new Host("localhost","demo",2376,"http","","",null,HostType.UNIX)
     }
 
     static Instance getInstance(){
-        new Instance("redis.proof.com","redis","latest",null,"default",Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_LIST,"")
+        return new Instance("redis.proof.com","redis","latest",null,"default",Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_LIST,"")
+    }
+
+    static String getJson(){
+       // new JsonBuilder(new RequestMessage("someId",new Host("localhost","demo",2376,"http","","",null,HostType.UNIX),new Instance("redis.proof.com","redis","latest",null,"default",Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_LIST,""))).toPrettyString()
     }
 }
