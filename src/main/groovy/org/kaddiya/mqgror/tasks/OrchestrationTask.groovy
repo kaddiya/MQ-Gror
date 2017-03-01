@@ -26,11 +26,11 @@ class OrchestrationTask extends AbstractOrchestrationTask implements Callable<Or
     @Override
     OrchestrationResult call() throws Exception {
         Instant startTime = Instant.now()
-        log.info("Orchestration task id {} with action {} for instance {} on Host {}  started at {}", taskId,action.name(), instance.name, host.ip,startTime)
+        log.info("Orchestration task id {} with action {} for instance {} on Host {}  started at {}", taskId, action.name(), instance.name, host.ip, startTime)
         AbstractDockerInteractionResponse interactionResponse = entryPoint.doWork()
         Instant endTime = Instant.now()
-        log.info("Orchestration task id {} with action {} for instance {} on Host {} with Id {} finished at {}", taskId,action.name(), instance.name, host.ip, endTime)
-        return new OrchestrationResult(taskId,interactionResponse != null ,interactionResponse,endTime,startTime)
+        log.info("Orchestration task id {} with action {} for instance {} on Host {} with Id {} finished at {}", taskId, action.name(), instance.name, host.ip, endTime)
+        return new OrchestrationResult(taskId, interactionResponse != null, interactionResponse, endTime, startTime)
     }
 
 

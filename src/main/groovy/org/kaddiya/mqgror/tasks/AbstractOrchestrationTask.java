@@ -11,6 +11,7 @@ import org.kaddiya.grorchestrator.managers.interfaces.DockerRemoteInterface;
 import org.kaddiya.grorchestrator.models.core.SupportedContainerActions;
 import org.kaddiya.grorchestrator.models.core.latest.Host;
 import org.kaddiya.grorchestrator.models.core.latest.Instance;
+import org.kaddiya.mqgror.guice.MQGrorModule;
 
 /**
  * Created by Webonise on 01/03/17.
@@ -24,7 +25,7 @@ public abstract class AbstractOrchestrationTask {
     protected DockerRemoteInterface entryPoint;
 
     private final Injector grorchestratorInjector = Guice.createInjector(new GrorchestratorModule(
-            new DeserialiserModule(), new DockerRemoteAPIModule(), new HelperModule()
+            new DeserialiserModule(), new DockerRemoteAPIModule(), new HelperModule(), new MQGrorModule()
 
     ));
     private final DockerContainerActionFactory actionFactory;

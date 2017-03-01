@@ -35,13 +35,16 @@ class MQGror {
         ExecutorService orchestratorService = Executors.newFixedThreadPool(10);
         Long taskId = 0;
         Properties props = new Properties();
+        //source the broker url from Env properties
         props.put("bootstrap.servers", "localhost:9092");
+        //source the group id from env properties
         props.put("group.id", "some!");
         props.put("key.deserializer", StringDeserializer.class.getName());
         props.put("value.deserializer", StringDeserializer.class.getName());
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
 
-
+        //source the topic name from the Env variables
+        //Also the secret key and access token needs to be supplied
         List<String> topics = Arrays.asList("test")
 
         consumer.subscribe(topics)
@@ -61,13 +64,16 @@ class MQGror {
                 RequestMessage message;
                 try {
                     message = mapper.readValue(record.value().bytes, RequestMessage.class)
-                }catch (Exception e){
-                    log.warn("Error occured in deserialing a message",e)
+                } catch (Exception e) {
+                    log.warn("Error occured in deserialing a message", e)
                     continue;
                 }
+                //further steps is to decrypt the message using the secret key and derive the message
+
                 assert message
                 assert message.host
                 assert message.instance
+
 
                 OrchestrationTask task = new OrchestrationTask(++taskId, getHost(), getInstance(), message.action)
                 Future result = orchestratorService.submit(task)
