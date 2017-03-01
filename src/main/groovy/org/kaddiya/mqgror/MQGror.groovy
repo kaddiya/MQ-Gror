@@ -75,7 +75,7 @@ class MQGror {
                 assert message.instance
 
 
-                OrchestrationTask task = new OrchestrationTask(++taskId, getHost(), getInstance(), message.action)
+                OrchestrationTask task = new OrchestrationTask(++taskId, message.host, message.instance, message.action)
                 Future result = orchestratorService.submit(task)
                 try {
                     result.get()

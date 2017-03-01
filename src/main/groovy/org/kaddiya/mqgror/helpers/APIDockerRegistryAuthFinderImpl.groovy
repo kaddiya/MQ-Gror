@@ -10,6 +10,6 @@ class APIDockerRegistryAuthFinderImpl implements DockerRegistryAuthFinder {
 
     @Override
     DockerHubAuth getDockerHubAuthForId(String s) {
-        return new DockerHubAuth(s, System.getenv("dhusername"), System.getenv("dhpassword"), System.getenv("dhemail"), " ")
+        return new DockerHubAuth(s, System.getProperty("dhusername"), System.getProperty("dhpassword"), System.getProperty("dhemail"), " ")
     }
 }
