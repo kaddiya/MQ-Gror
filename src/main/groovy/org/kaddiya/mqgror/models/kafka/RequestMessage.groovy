@@ -1,8 +1,6 @@
 package org.kaddiya.mqgror.models.kafka
 
 import groovy.transform.Canonical
-import groovy.transform.Immutable
-import org.kaddiya.grorchestrator.models.core.DockerHubAuth
 import org.kaddiya.grorchestrator.models.core.SupportedContainerActions
 import org.kaddiya.grorchestrator.models.core.latest.Host
 import org.kaddiya.grorchestrator.models.core.latest.Instance

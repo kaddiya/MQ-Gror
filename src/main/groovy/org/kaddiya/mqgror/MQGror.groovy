@@ -1,23 +1,12 @@
 package org.kaddiya.mqgror
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.google.inject.Guice
-import com.google.inject.Injector
-import groovy.json.JsonBuilder
-import groovy.json.JsonParser
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.kaddiya.grorchestrator.guice.DeserialiserModule
-import org.kaddiya.grorchestrator.guice.DockerRemoteAPIModule
-import org.kaddiya.grorchestrator.guice.GrorchestratorModule
-import org.kaddiya.grorchestrator.guice.HelperModule
-import org.kaddiya.grorchestrator.guice.factory.DockerContainerActionFactory
-import org.kaddiya.grorchestrator.managers.DockerRemoteAPI
-import org.kaddiya.grorchestrator.managers.interfaces.DockerRemoteInterface
 import org.kaddiya.grorchestrator.models.HostType
 import org.kaddiya.grorchestrator.models.core.SupportedContainerActions
 import org.kaddiya.grorchestrator.models.core.latest.Host
@@ -36,12 +25,13 @@ import java.util.concurrent.Future
  *
  * @author Webonise, @date 22/2/17 6:02 PM
  */
+
 @CompileStatic
 @Slf4j
 class MQGror {
 
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         ExecutorService orchestratorService = Executors.newFixedThreadPool(10);
         Long taskId = 0;
         Properties props = new Properties();
@@ -56,39 +46,37 @@ class MQGror {
 
         consumer.subscribe(topics)
 
-        while(true){
+        while (true) {
             ConsumerRecords<String, String> records = consumer.poll(10);
             for (ConsumerRecord<String, String> record : records) {
 
-               // log.info(getJson())
                 Map<String, Object> data = new HashMap<>();
                 data.put("partition", record.partition());
                 data.put("offset", record.offset());
                 data.put("value", record.value());
+                log.info(record.value())
                 SupportedContainerActions action
+
+                ObjectMapper mapper = new ObjectMapper();
+                RequestMessage message;
                 try {
-                     action = SupportedContainerActions.valueOf(record.value())
+                    message = mapper.readValue(record.value().bytes, RequestMessage.class)
                 }catch (Exception e){
-                    log.warn("Incorrect value found")
+                    log.warn("Error occured in deserialing a message",e)
                     continue;
                 }
-
-               /* ObjectMapper mapper = new ObjectMapper();
-                RequestMessage message ;
-
-                message = mapper.readValue(record.value().bytes,RequestMessage.class)
-                assert  message
+                assert message
                 assert message.host
-                assert  message.instance*/
+                assert message.instance
 
-                OrchestrationTask task = new OrchestrationTask(++taskId,getHost(),getInstance(),action)
+                OrchestrationTask task = new OrchestrationTask(++taskId, getHost(), getInstance(), message.action)
                 Future result = orchestratorService.submit(task)
                 try {
                     result.get()
-                    log.info("tasks with id : {} has been executed {}",result.get().taskId,result.get().sucess)
+                    log.info("tasks with id : {} has been executed {}", result.get().taskId, result.get().sucess)
                 }
-                catch (ExecutionException e){
-                    log.error("Something went wrong in the execution of task with id {}",taskId,e.getCause())
+                catch (ExecutionException e) {
+                    log.error("Something went wrong in the execution of task with id {}", taskId, e.getCause())
                 }
 
             }
@@ -97,15 +85,15 @@ class MQGror {
 
     }
 
-    static Host getHost(){
-        return new Host("localhost","demo",2376,"http","","",null,HostType.UNIX)
+    static Host getHost() {
+        return new Host("localhost", "demo", 2376, "http", "", "", null, HostType.UNIX)
     }
 
-    static Instance getInstance(){
-        return new Instance("redis.proof.com","redis","latest",null,"default",Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_LIST,"")
+    static Instance getInstance() {
+        return new Instance("redis.proof.com", "redis", "latest", null, "default", Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_LIST, "")
     }
 
-    static String getJson(){
-       // new JsonBuilder(new RequestMessage("someId",new Host("localhost","demo",2376,"http","","",null,HostType.UNIX),new Instance("redis.proof.com","redis","latest",null,"default",Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_LIST,""))).toPrettyString()
+    static String getJson() {
+        // new JsonBuilder(new RequestMessage("someId",new Host("localhost","demo",2376,"http","","",null,HostType.UNIX),new Instance("redis.proof.com","redis","latest",null,"default",Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_LIST,""))).toPrettyString()
     }
 }

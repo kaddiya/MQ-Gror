@@ -1,8 +1,9 @@
 package org.kaddiya.mqgror.models.kafka.internal
 
 import groovy.transform.Canonical
-import groovy.transform.Immutable
 import org.kaddiya.grorchestrator.models.remotedocker.responses.AbstractDockerInteractionResponse
+
+import java.time.Instant
 
 /**
  * Created by Webonise on 22/02/17.
@@ -12,4 +13,7 @@ class OrchestrationResult {
     Long taskId
     Boolean sucess
     AbstractDockerInteractionResponse interactionResponse
+    Instant endTime
+    Instant startTime
+
 }
