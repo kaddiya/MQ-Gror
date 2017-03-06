@@ -84,7 +84,7 @@ class MQGror {
                 ListenableFuture<OrchestrationResult> listenableFuture = orchestratorService.submit(task)
                 //Future result = orchestratorService.submit(task)
 
-                Futures.addCallback(listenableFuture, new OrchestrationTaskCallBack())
+                Futures.addCallback(listenableFuture, new OrchestrationTaskCallBack(taskId))
                 /*  try {
                       result.get()
                       log.info("tasks with id : {} has been executed {}", result.get().taskId, result.get().sucess)
@@ -107,7 +107,5 @@ class MQGror {
         return new Instance("redis.proof.com", "redis", "latest", null, "default", Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_LIST, "")
     }
 
-    static String getJson() {
-        // new JsonBuilder(new RequestMessage("someId",new Host("localhost","demo",2376,"http","","",null,HostType.UNIX),new Instance("redis.proof.com","redis","latest",null,"default",Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_MAP,Collections.EMPTY_LIST,""))).toPrettyString()
-    }
+
 }
